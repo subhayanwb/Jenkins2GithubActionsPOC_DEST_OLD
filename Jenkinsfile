@@ -9,8 +9,8 @@ pipeline {
 
     environment {
         //need to adjust with actual variable value
-        ECR_REPO_URL = '1234567891.dkr.ecr.us-east-1.amazonaws.com'
-        ECR_APP_NAME = 'jenkins-aws-java-maven-app'
+        ECR_REPO_URL = '783764571626.dkr.ecr.ap-south-1.amazonaws.com'
+        ECR_APP_NAME = 'jenkinspoc'
         SERVER_INSTANCE_IP = '000.000.00.00'
         SERVER_INSTANCE_USER = 'ubuntu'
         GIT_REPO_URL = 'github.com/user/repo-name.git'
@@ -46,9 +46,9 @@ pipeline {
             steps {
                 script {
                     echo 'building the docker image...'
-                    withCredentials([usernamePassword(credentialsId: 'aws-ecr', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'aws-ecr', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                         sh "docker build -t ${IMAGE_REPO}:${IMAGE_NAME} ."
-                        sh "echo $PASS | docker login -u $USER --password-stdin ${ECR_REPO_URL}"
+                        sh "echo $AWS_SECRET_ACCESS_KEY | docker login -u $AWS_ACCESS_KEY_ID --password-stdin ${ECR_REPO_URL}"
                         sh "docker push ${IMAGE_REPO}:${IMAGE_NAME}"
                     }
                 }
