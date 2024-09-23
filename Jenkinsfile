@@ -1,88 +1,58 @@
-#!/usr/bin/env groovy
-
 pipeline {
     agent any
-
-    tools {
-        maven 'Maven'
-    }
-
-    environment {
-        //need to adjust with actual variable value
-        ECR_REPO_URL = '783764571626.dkr.ecr.ap-south-1.amazonaws.com'
-        ECR_APP_NAME = 'jenkinspoc'
-        SERVER_INSTANCE_IP = '000.000.00.00'
-        SERVER_INSTANCE_USER = 'ubuntu'
-        GIT_REPO_URL = 'github.com/user/repo-name.git'
-        IMAGE_REPO = "$ECR_REPO_URL/$ECR_APP_NAME"
-    }
-
+       triggers {
+        pollSCM "* * * * *"
+       }
     stages {
-        stage('increment version') {
+        stage('Build Application') { 
             steps {
-                script {
-                    echo 'incrementing app version...'
-                    sh 'mvn build-helper:parse-version versions:set \
-                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
-                        versions:commit'
-                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-                    def version = matcher[0][1]
-                    env.IMAGE_NAME = "$version-$BUILD_NUMBER"
-                    echo "############ ${IMAGE_REPO}"
+                echo '=== Building Petclinic Application ==='
+                sh 'mvn -B -DskipTests clean package' 
+            }
+        }
+        stage('Test Application') {
+            steps {
+                echo '=== Testing Petclinic Application ==='
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
                 }
             }
         }
-
-        stage('build app') {
+        stage('Build Docker Image') {
+            when {
+                branch 'master'
+            }
             steps {
+                echo '=== Building Petclinic Docker Image ==='
                 script {
-                    echo 'building the application...'
-                    sh 'mvn clean package'
+                    app = docker.build("ibuchh/petclinic-spinnaker-jenkins")
                 }
             }
         }
-
-        stage('build image') {
+        stage('Push Docker Image') {
+            when {
+                branch 'master'
+            }
             steps {
+                echo '=== Pushing Petclinic Docker Image ==='
                 script {
-                    echo 'building the docker image...'
-                    withCredentials([usernamePassword(credentialsId: 'aws-ecr', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                        sh "docker build -t ${IMAGE_REPO}:${IMAGE_NAME} ."
-                        sh "echo $AWS_SECRET_ACCESS_KEY | docker login -u $AWS_ACCESS_KEY_ID --password-stdin ${ECR_REPO_URL}"
-                        sh "docker push ${IMAGE_REPO}:${IMAGE_NAME}"
+                    GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+                    SHORT_COMMIT = "${GIT_COMMIT_HASH[0..7]}"
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerHubCredentials') {
+                        app.push("$SHORT_COMMIT")
+                        app.push("latest")
                     }
                 }
             }
         }
-
-        stage('Deploy') {
+        stage('Remove local images') {
             steps {
-                script {
-                    // def ec2Instance = 'ubuntu@107.20.79.59'
-                    def ec2Instance = "$SERVER_INSTANCE_USER@$SERVER_INSTANCE_IP"
-                    def deployCmd = "bash ./web-deploy.sh ${IMAGE_NAME}"
-
-                    sshagent(['web-server-key']) {
-                        sh "scp -o StrictHostKeyChecking=no web-deploy.sh ${ec2Instance}:/home/ubuntu"
-                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2Instance}:/home/ubuntu"
-                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${deployCmd}"
-                    }
-                }
-            }
-        }
-
-        stage('commit version update') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'GithubTokenSimple', variable: 'GITHUB_TOKEN')]) {
-                        sh 'git config user.email "jenkins@example.com"'
-                        sh 'git config user.name "Jenkins"'
-                        sh "git remote set-url origin https://${GITHUB_TOKEN}@$GIT_REPO_URL"
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:main'
-                    }
-                }
+                echo '=== Delete the local docker images ==='
+                sh("docker rmi -f ibuchh/petclinic-spinnaker-jenkins:latest || :")
+                sh("docker rmi -f ibuchh/petclinic-spinnaker-jenkins:$SHORT_COMMIT || :")
             }
         }
     }
