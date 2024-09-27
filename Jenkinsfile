@@ -7,9 +7,8 @@ pipeline {
 
     tools {
         // Specify the tool versions installed on Jenkins (make sure these are configured)
-        maven 'Maven_3.8.1'
-        jdk 'JDK_11'
-    }
+        maven 'Maven_3.9.9'
+   }
 
     stages {
         stage('Initialize') {
@@ -22,7 +21,7 @@ pipeline {
         stage('Maven Build') {
             steps {
                 // Run a Maven build using the configured Maven tool
-                withMaven(maven: 'Maven_3.8.1') {
+                withMaven(maven: 'Maven_3.9.9') {
                     // Runs Maven goals like 'clean install'
                     echo "Running Maven build"
                     // Built-in Maven integration in Jenkins
