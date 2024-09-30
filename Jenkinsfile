@@ -1,67 +1,41 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "my-app:${env.BUILD_NUMBER}"
-    }
-
-    tools {
-        // Specify the tool versions installed on Jenkins (make sure these are configured)
-        maven 'Maven_3.9.9'
-   }
-
     stages {
-        stage('Initialize') {
+        stage('Checkout') {
             steps {
-                cleanWs() // Clean workspace before starting
-                echo "Building with Maven and Docker"
+                // Checkout code from the repository
+                checkout scm
             }
         }
 
-        stage('Maven Build') {
+        stage('Build') {
             steps {
-                // Run a Maven build using the configured Maven tool
-                withMaven(maven: 'Maven_3.9.9') {
-                    // Runs Maven goals like 'clean install'
-                    echo "Running Maven build"
-                    // Built-in Maven integration in Jenkins
-                    mvn 'clean install'
-                }
+                // Simulate a build process
+                echo 'Building the project...'
             }
         }
 
-        stage('Docker Build') {
+        stage('Test') {
             steps {
-                // Create a Docker image using Docker pipeline plugin
-                script {
-                    echo "Building Docker image: ${DOCKER_IMAGE}"
-                    docker.build("${DOCKER_IMAGE}", ".") // '.' refers to current directory where Dockerfile resides
-                }
+                // Simulate a test process
+                echo 'Running tests...'
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Deploy') {
             steps {
-                script {
-                    echo "Pushing Docker image to registry"
-                    docker.withRegistry('https://my-docker-registry.com', 'docker-credentials-id') {
-                        docker.image("${DOCKER_IMAGE}").push()
-                    }
-                }
+                // Simulate a deploy process
+                echo 'Deploying the project...'
             }
         }
     }
 
     post {
         always {
-            echo "Cleaning up workspace"
+            // Clean up workspace
+            echo 'Cleaning workspace...'
             cleanWs()
-        }
-        success {
-            echo "Build and Docker image creation completed successfully!"
-        }
-        failure {
-            echo "Build or Docker image creation failed."
         }
     }
 }
