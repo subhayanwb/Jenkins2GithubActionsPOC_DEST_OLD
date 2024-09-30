@@ -1,0 +1,128 @@
+name: POCJobs/Simple_Decl_no_EPF_5
+on:
+jobs:
+  Clone:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+      with:
+        repository: jfrog/project-examples
+  Artifactory_configuration:
+    name: Artifactory configuration
+    runs-on: ubuntu-latest
+    needs: Clone
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtServer:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: ARTIFACTORY_SERVER
+#       - key: url
+#         value:
+#           isLiteral: false
+#           value: "${{ env.SERVER_URL }}"
+#       - key: credentialsId
+#         value:
+#           isLiteral: false
+#           value: "${{ env.CREDENTIALS }}"
+#     # This item has no matching transformer
+#     - rtMavenDeployer:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: MAVEN_DEPLOYER
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: ARTIFACTORY_SERVER
+#       - key: releaseRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_LOCAL_RELEASE_REPO }}"
+#       - key: snapshotRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_LOCAL_SNAPSHOT_REPO }}"
+#     # This item has no matching transformer
+#     - rtMavenResolver:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: MAVEN_RESOLVER
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: ARTIFACTORY_SERVER
+#       - key: releaseRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_VIRTUAL_RELEASE_REPO }}"
+#       - key: snapshotRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_VIRTUAL_SNAPSHOT_REPO }}"
+  Exec_Maven:
+    name: Exec Maven
+    runs-on: ubuntu-latest
+    needs: Artifactory_configuration
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtMavenRun:
+#       - key: tool
+#         value:
+#           isLiteral: false
+#           value: "${{ env.MAVEN_TOOL }}"
+#       - key: pom
+#         value:
+#           isLiteral: true
+#           value: maven-examples/maven-example/pom.xml
+#       - key: goals
+#         value:
+#           isLiteral: true
+#           value: clean install -U
+#       - key: deployerId
+#         value:
+#           isLiteral: true
+#           value: MAVEN_DEPLOYER
+#       - key: resolverId
+#         value:
+#           isLiteral: true
+#           value: MAVEN_RESOLVER
+  Publish_build_info:
+    name: Publish build info
+    runs-on: ubuntu-latest
+    needs: Exec_Maven
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtPublishBuildInfo:
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: ARTIFACTORY_SERVER
+  Xray_scan:
+    name: Xray scan
+    runs-on: ubuntu-latest
+    needs: Publish_build_info
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - xrayScan:
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: ARTIFACTORY_SERVER
+#       - key: failBuild
+#         value:
+#           isLiteral: true
+#           value: false
