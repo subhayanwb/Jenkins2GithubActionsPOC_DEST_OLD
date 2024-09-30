@@ -1,0 +1,197 @@
+name: POCJobs/Medium_Decl_no_epf_with_sh_4
+on:
+jobs:
+  Clone:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+      with:
+        repository: talitz/spring-petclinic-ci-cd-k8s-example
+  Artifactory_Configuration:
+    name: Artifactory Configuration
+    runs-on: ubuntu-latest
+    needs: Clone
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtServer:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: artifactory-server-id
+#       - key: url
+#         value:
+#           isLiteral: true
+#           value: https://talyi.jfrog.io/artifactory
+#       - key: credentialsId
+#         value:
+#           isLiteral: true
+#           value: admin.jfrog
+#     # This item has no matching transformer
+#     - rtMavenResolver:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: maven-resolver
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: artifactory-server-id
+#       - key: releaseRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_VIRTUAL_RELEASE_REPO }}"
+#       - key: snapshotRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_VIRTUAL_SNAPSHOT_REPO }}"
+#     # This item has no matching transformer
+#     - rtMavenDeployer:
+#       - key: id
+#         value:
+#           isLiteral: true
+#           value: maven-deployer
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: artifactory-server-id
+#       - key: releaseRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_LOCAL_RELEASE_REPO }}"
+#       - key: snapshotRepo
+#         value:
+#           isLiteral: false
+#           value: "${{ env.ARTIFACTORY_LOCAL_SNAPSHOT_REPO }}"
+#       - key: threads
+#         value:
+#           isLiteral: true
+#           value: 6
+#       - key: properties
+#         value:
+#           isLiteral: false
+#           value: "${['BinaryPurpose=Technical-BlogPost', 'Team=DevOps-Acceleration']}"
+  Build_Maven_Project:
+    name: Build Maven Project
+    runs-on: ubuntu-latest
+    needs: Artifactory_Configuration
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtMavenRun:
+#       - key: tool
+#         value:
+#           isLiteral: true
+#           value: Maven 3.3.9
+#       - key: pom
+#         value:
+#           isLiteral: true
+#           value: pom.xml
+#       - key: goals
+#         value:
+#           isLiteral: true
+#           value: "-U clean install"
+#       - key: deployerId
+#         value:
+#           isLiteral: true
+#           value: maven-deployer
+#       - key: resolverId
+#         value:
+#           isLiteral: true
+#           value: maven-resolver
+  Build_Docker_Image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: Build_Maven_Project
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # 'script' was not transformed because there is no suitable equivalent in GitHub Actions
+#     - name: script
+#       arguments:
+#       - key: scriptBlock
+#         value:
+#           isLiteral: true
+#           value: docker.build("talyi-docker.jfrog.io/" + "pet-clinic:1.0.${{ env.BUILD_NUMBER }}")
+  Push_Image_to_Artifactory:
+    name: Push Image to Artifactory
+    runs-on: ubuntu-latest
+    needs: Build_Docker_Image
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtDockerPush:
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: artifactory-server-id
+#       - key: image
+#         value:
+#           isLiteral: false
+#           value: ${"talyi-docker.jfrog.io/"+"pet-clinic:1.0.${{ env.BUILD_NUMBER }}"}
+#       - key: targetRepo
+#         value:
+#           isLiteral: true
+#           value: docker
+#       - key: properties
+#         value:
+#           isLiteral: true
+#           value: project-name=jfrog-blog-post;status=stable
+  Publish_Build_Info:
+    name: Publish Build Info
+    runs-on: ubuntu-latest
+    needs: Push_Image_to_Artifactory
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # This item has no matching transformer
+#     - rtPublishBuildInfo:
+#       - key: serverId
+#         value:
+#           isLiteral: true
+#           value: helmRepoResource
+  Install_Helm:
+    name: Install Helm
+    runs-on: ubuntu-latest
+    needs: Publish_Build_Info
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: sh
+      shell: bash
+      run: |-
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+        chmod 700 get_helm.sh && helm version
+  Configure_Helm_Artifactory:
+    name: Configure Helm & Artifactory
+    runs-on: ubuntu-latest
+    needs: Install_Helm
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+#     # 'withCredentials(type=UsernamePasswordMultiBinding)' was not transformed because there is no suitable equivalent in GitHub Actions
+    - name: sh
+      shell: bash
+      run: |-
+        helm repo add helm https://talyi.jfrog.io/artifactory/helm --username ${{ env.USERNAME }} --password ${{ env.PASSWORD }}
+        helm repo update
+  Deploy_Chart:
+    name: Deploy Chart
+    runs-on: ubuntu-latest
+    needs: Configure_Helm_Artifactory
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4.1.0
+    - name: sh
+      shell: bash
+      run: |-
+        echo "$KUBECONFIG_CONTENT" > config && cp config ~/.kube/config
+        helm upgrade --install spring-petclinic-ci-cd-k8s-example helm/spring-petclinic-ci-cd-k8s-chart --kube-context=gke_soleng-dev_us-west1-a_artifactory-ha-cluster --set=image.tag=1.0.${{ env.BUILD_NUMBER }}
+      env:
+        KUBECONFIG_CONTENT: "${{ secrets.K8S_CLUSTER_KUBECONFIG_KUBECONFIG_CONTENT }}"
