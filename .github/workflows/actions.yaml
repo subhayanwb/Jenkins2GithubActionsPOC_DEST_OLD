@@ -130,8 +130,8 @@ jobs:
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Deploy with Argo Rollouts
       run: |
-        kubectl argo rollouts set image ${{{{ env.APP_NAME }}}}-{env_name} ${{{{ env.APP_NAME }}}}-{env_name}=${{{{ env.QUAY_REGISTRY }}}}/${{{{ github.repository }}}}:${{{{ github.sha }}}}
-        kubectl argo rollouts status ${{{{ env.APP_NAME }}}}-{env_name} --watch
+        kubectl argo rollouts set image ${{ env.APP_NAME }}-{env_name} ${{ env.APP_NAME }}-{env_name}=${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+        kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - docker-buildimage-image
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
