@@ -38,7 +38,7 @@ jobs:
       with:
         name: app-artifact
         path: target/*.jar
-    if: contains(['.*'], github.ref_name)
+    if: contains(fromJson('[".*"]'), github.ref_name)
   quality-scan-sonarqube:
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +50,7 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
     needs:
     - maven-build
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
   quality-scan-checkmarx:
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +66,7 @@ jobs:
         checkmarx_client_secret: ${{ secrets.CHECKMARX_CLIENT_SECRET }}
     needs:
     - quality-scan-sonarqube
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
   docker-buildimage-image:
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +85,7 @@ jobs:
         tags: ${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
     needs:
     - quality-scan-checkmarx
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
   openshift-deploy-dev:
     runs-on: ubuntu-latest
     steps:
@@ -134,7 +134,7 @@ jobs:
         kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - docker-buildimage-image
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: dev
   openshift-promote-dev:
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
       run: kubectl argo rollouts promote ${ env.APP_NAME }-dev
     needs:
     - openshift-deploy-dev
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: dev
   openshift-deploy-qa:
     runs-on: ubuntu-latest
@@ -202,7 +202,7 @@ jobs:
         kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - openshift-promote-dev
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: qa
   openshift-promote-qa:
     runs-on: ubuntu-latest
@@ -220,7 +220,7 @@ jobs:
       run: kubectl argo rollouts promote ${ env.APP_NAME }-qa
     needs:
     - openshift-deploy-qa
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: qa
   openshift-deploy-uat:
     runs-on: ubuntu-latest
@@ -270,7 +270,7 @@ jobs:
         kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - openshift-promote-qa
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: uat
   openshift-promote-uat:
     runs-on: ubuntu-latest
@@ -288,7 +288,7 @@ jobs:
       run: kubectl argo rollouts promote ${ env.APP_NAME }-uat
     needs:
     - openshift-deploy-uat
-    if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
+    if: contains(fromJson('["^(develop|feature|release).*"]'), github.ref_name)
     environment: uat
   docker-publishimage-image:
     runs-on: ubuntu-latest
@@ -308,7 +308,7 @@ jobs:
         tags: ${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
     needs:
     - openshift-promote-uat
-    if: contains(['^(release', 'hotfix).*'], github.ref_name)
+    if: contains(fromJson('["^(release|hotfix).*"]'), github.ref_name)
   openshift-deploy-prod:
     runs-on: ubuntu-latest
     steps:
@@ -357,7 +357,7 @@ jobs:
         kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - docker-publishimage-image
-    if: contains(['^(release', 'hotfix).*'], github.ref_name)
+    if: contains(fromJson('["^(release|hotfix).*"]'), github.ref_name)
     environment: prod
   openshift-promote-prod:
     runs-on: ubuntu-latest
@@ -375,5 +375,5 @@ jobs:
       run: kubectl argo rollouts promote ${ env.APP_NAME }-prod
     needs:
     - openshift-deploy-prod
-    if: contains(['^(release', 'hotfix).*'], github.ref_name)
+    if: contains(fromJson('["^(release|hotfix).*"]'), github.ref_name)
     environment: prod
