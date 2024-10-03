@@ -117,7 +117,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "Update Helm charts for ${{{{ env.APP_NAME }}}}-{env_name} - ${{{{ github.sha }}}}"
+        git commit -m "Update Helm charts for ${{ env.APP_NAME }}-{env_name} - ${{ github.sha }}"
         git push
     - name: Install OpenShift CLI
       uses: redhat-actions/openshift-tools-installer@v1
@@ -130,8 +130,8 @@ jobs:
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Deploy with Argo Rollouts
       run: |
-        kubectl argo rollouts set image ${{{{ env.APP_NAME }}}}-{env_name} ${{{{ env.APP_NAME }}}}-{env_name}=${{{{ env.QUAY_REGISTRY }}}}/${{{{ github.repository }}}}:${{{{ github.sha }}}}
-        kubectl argo rollouts status ${{{{ env.APP_NAME }}}}-{env_name} --watch
+        kubectl argo rollouts set image ${{ env.APP_NAME }}-{env_name} ${{ env.APP_NAME }}-{env_name}=${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+        kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - docker-buildimage-image
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -149,7 +149,7 @@ jobs:
         openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Promote Argo Rollouts
-      run: kubectl argo rollouts promote ${{ env.APP_NAME }}-dev
+      run: kubectl argo rollouts promote ${ env.APP_NAME }-dev
     needs:
     - openshift-deploy-dev
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -185,7 +185,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "Update Helm charts for ${{{{ env.APP_NAME }}}}-{env_name} - ${{{{ github.sha }}}}"
+        git commit -m "Update Helm charts for ${{ env.APP_NAME }}-{env_name} - ${{ github.sha }}"
         git push
     - name: Install OpenShift CLI
       uses: redhat-actions/openshift-tools-installer@v1
@@ -198,8 +198,8 @@ jobs:
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Deploy with Argo Rollouts
       run: |
-        kubectl argo rollouts set image ${{{{ env.APP_NAME }}}}-{env_name} ${{{{ env.APP_NAME }}}}-{env_name}=${{{{ env.QUAY_REGISTRY }}}}/${{{{ github.repository }}}}:${{{{ github.sha }}}}
-        kubectl argo rollouts status ${{{{ env.APP_NAME }}}}-{env_name} --watch
+        kubectl argo rollouts set image ${{ env.APP_NAME }}-{env_name} ${{ env.APP_NAME }}-{env_name}=${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+        kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - openshift-promote-dev
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -217,7 +217,7 @@ jobs:
         openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Promote Argo Rollouts
-      run: kubectl argo rollouts promote ${{ env.APP_NAME }}-qa
+      run: kubectl argo rollouts promote ${ env.APP_NAME }-qa
     needs:
     - openshift-deploy-qa
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -253,7 +253,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "Update Helm charts for ${{{{ env.APP_NAME }}}}-{env_name} - ${{{{ github.sha }}}}"
+        git commit -m "Update Helm charts for ${{ env.APP_NAME }}-{env_name} - ${{ github.sha }}"
         git push
     - name: Install OpenShift CLI
       uses: redhat-actions/openshift-tools-installer@v1
@@ -266,8 +266,8 @@ jobs:
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Deploy with Argo Rollouts
       run: |
-        kubectl argo rollouts set image ${{{{ env.APP_NAME }}}}-{env_name} ${{{{ env.APP_NAME }}}}-{env_name}=${{{{ env.QUAY_REGISTRY }}}}/${{{{ github.repository }}}}:${{{{ github.sha }}}}
-        kubectl argo rollouts status ${{{{ env.APP_NAME }}}}-{env_name} --watch
+        kubectl argo rollouts set image ${{ env.APP_NAME }}-{env_name} ${{ env.APP_NAME }}-{env_name}=${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+        kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - openshift-promote-qa
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -285,7 +285,7 @@ jobs:
         openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Promote Argo Rollouts
-      run: kubectl argo rollouts promote ${{ env.APP_NAME }}-uat
+      run: kubectl argo rollouts promote ${ env.APP_NAME }-uat
     needs:
     - openshift-deploy-uat
     if: contains(['^(develop', 'feature', 'release).*'], github.ref_name)
@@ -340,7 +340,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "Update Helm charts for ${{{{ env.APP_NAME }}}}-{env_name} - ${{{{ github.sha }}}}"
+        git commit -m "Update Helm charts for ${{ env.APP_NAME }}-{env_name} - ${{ github.sha }}"
         git push
     - name: Install OpenShift CLI
       uses: redhat-actions/openshift-tools-installer@v1
@@ -353,8 +353,8 @@ jobs:
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Deploy with Argo Rollouts
       run: |
-        kubectl argo rollouts set image ${{{{ env.APP_NAME }}}}-{env_name} ${{{{ env.APP_NAME }}}}-{env_name}=${{{{ env.QUAY_REGISTRY }}}}/${{{{ github.repository }}}}:${{{{ github.sha }}}}
-        kubectl argo rollouts status ${{{{ env.APP_NAME }}}}-{env_name} --watch
+        kubectl argo rollouts set image ${{ env.APP_NAME }}-{env_name} ${{ env.APP_NAME }}-{env_name}=${{ env.QUAY_REGISTRY }}/${{ github.repository }}:${{ github.sha }}
+        kubectl argo rollouts status ${{ env.APP_NAME }}-{env_name} --watch
     needs:
     - docker-publishimage-image
     if: contains(['^(release', 'hotfix).*'], github.ref_name)
@@ -372,7 +372,7 @@ jobs:
         openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
         openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
     - name: Promote Argo Rollouts
-      run: kubectl argo rollouts promote ${{ env.APP_NAME }}-prod
+      run: kubectl argo rollouts promote ${ env.APP_NAME }-prod
     needs:
     - openshift-deploy-prod
     if: contains(['^(release', 'hotfix).*'], github.ref_name)
