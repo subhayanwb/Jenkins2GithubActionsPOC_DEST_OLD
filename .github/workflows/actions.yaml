@@ -1,5 +1,5 @@
-name: Java CI/CD Pipeline Complex
-'on':
+name: Java CI/CD Pipeline
+on:
   push:
     branches:
     - main
